@@ -5,11 +5,11 @@ RSpec.describe Quadrant do
   let(:galaxy) { Galaxy.new }
 
   describe 'initialize' do
-    subject { described_class.new(galaxy, x: 4, y: 4) }
+    subject { described_class.new(galaxy, x: 4, y: 4, random: -> { 0.99 }) }
 
     it 'should have a reasonable number of things' do
-      expect(subject.num_klingons).to be_between(0, 3)
-      expect(subject.num_starbases).to be_between(0, 2)
+      expect(subject.num_klingons).to eq 3
+      expect(subject.starbase?).to be_truthy
       expect(subject.num_stars).to be_between(1, 8)
 
       # The map is seeded when the hero arrives, so
@@ -36,10 +36,10 @@ RSpec.describe Quadrant do
     end
 
     describe 'add_starbases' do
-      subject { quadrant.tweak add_starbases: 1 }
+      subject { quadrant.tweak add_starbase: true }
 
       it 'revises quadrant numbers' do
-        expect { subject }.to change { quadrant.num_starbases }.by 1
+        expect { subject }.to change { quadrant.starbase? }.to be_truthy
       end
 
       it 'revises galaxy numbers' do
@@ -104,11 +104,10 @@ RSpec.describe Quadrant do
   end
 
   describe 'hero_arrives' do
-    let(:quadrant) { described_class.new(galaxy, x: 4, y: 4) }
+    let(:quadrant) { described_class.new(galaxy, x: 4, y: 4, random: -> { 0.99 }) }
 
     before do
-      # Force entities to exist
-      allow(quadrant).to receive(:rand) { 0.99 }
+      # Guarantee klingons, starbases, and stars
       quadrant.hero_arrives
     end
 
@@ -119,6 +118,28 @@ RSpec.describe Quadrant do
     end
 
     it 'places the villains' do
+      expect(quadrant.klingons.count).to eq quadrant.num_klingons
+      quadrant.klingons.each do |klingon|
+        expect(quadrant.sector(x: klingon.location.sector.x,
+                               y: klingon.location.sector.y))
+          .to eq Quadrant::TOKENS[:villain]
+      end
+    end
+
+    it 'places the starbase(s)' do
+      expect(quadrant.starbase?).to be_truthy
+      expect(quadrant.sector(x: quadrant.starbase.sector.x,
+                             y: quadrant.starbase.sector.y))
+        .to eq Quadrant::TOKENS[:starbase]
+    end
+
+    it 'places stars' do
+      expect(quadrant.num_stars).to be > 0
+      expect(quadrant.stars.count).to eq quadrant.num_stars
+      quadrant.stars do |star|
+        expect(quadrant.sector(x: star.sector.x, y: star.sector.y))
+          .to eq Quadrant::TOKENS[:star]
+      end
     end
   end
 end

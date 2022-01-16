@@ -1,5 +1,6 @@
-require_relative './utilities'
 require_relative './galaxy'
+require_relative './utilities'
+require_relative './villain'
 
 class Quadrant
   include Utilities
@@ -38,17 +39,20 @@ class Quadrant
     space: '   '
   }
 
-  attr_reader :num_klingons, :num_starbases, :num_stars,
+  attr_reader :num_klingons, :num_stars,
+              :klingons, :starbase, :stars,
               :sectors, :galaxy, :x, :y
 
-  def initialize(galaxy, x:, y:)
+  # Override `random` when you need to test with a specific value
+  # Any lamba will do, so, -> { 0.99 } would ensure max villains and a starbase
+  def initialize(galaxy, x:, y:, random: -> { rand })
     @galaxy = galaxy
     @x = x
     @y = y
 
     @sectors = Array.new(8) { Array.new(8) { TOKENS[:space] }}
 
-    @num_klingons = case rand
+    @num_klingons = case random.call
     when 0.98..1.00
       3
     when 0.96..0.98
@@ -59,20 +63,36 @@ class Quadrant
       0
     end
 
-    @num_starbases = if rand > 0.96
-      1
-    else
-      0
-    end
+    @has_starbase = random.call > 0.96
 
     @num_stars = special_random(one_based: true)
-    galaxy.increment(klingons: num_klingons, starbases: num_starbases, stars: num_stars)
+
+    # For this port, we follow the same rules that the
+    # BASIC code did. This means each quadrant is governed
+    # by Schroedinger, and no objects are actually placed
+    # until the hero enters the quadrant.
+    reset_quadrant
+
+    galaxy.increment(klingons: num_klingons,
+                     starbases: starbase? ? 1 : 0,
+                     stars: num_stars)
   end
 
-  def tweak(add_klingons: 0, add_starbases: 0)
+  def starbase?
+    @has_starbase
+  end
+
+  def reset_quadrant
+    @klingons = []
+    @starbase = nil
+    @stars = []
+  end
+
+  def tweak(add_klingons: 0, add_starbase: false)
     @num_klingons += add_klingons
-    @num_starbases += add_starbases
-    galaxy.increment klingons: add_klingons, starbases: add_starbases
+    @has_starbase = add_starbase
+    galaxy.increment klingons: add_klingons,
+                     starbases: add_starbase ? 1 : 0
   end
 
   def hero
@@ -113,7 +133,7 @@ class Quadrant
     announce_arrival
     place_hero
     place_villains
-    place_starbases
+    place_starbase
     place_stars
   end
 
@@ -145,17 +165,30 @@ ARRIVAL
   end
 
   def place_villains
-
+    return unless num_klingons > 0
+    @klingons = Array.new(num_klingons) do
+      loc = find_space
+      place_entity(:villain, x: loc.sector.x, y: loc.sector.y)
+      Villain.new(loc)
+    end
   end
 
-  def place_starbases
+  def place_starbase
+    return unless starbase?
+    @starbase = find_space
+    place_entity(:starbase, x: starbase.sector.x, y: starbase.sector.y)
   end
 
   def place_stars
+    @stars = Array.new(num_stars) do
+      loc = find_space
+      place_entity(:star, x: loc.sector.x, y: loc.sector.y)
+      loc
+    end
   end
 
   def to_i
-    num_klingons * 100 + num_starbases * 10 + num_stars
+    num_klingons * 100 + starbase? ? 10 : 0 + num_stars
   end
 
   def to_s

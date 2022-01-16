@@ -59,9 +59,9 @@ class Galaxy
     if total_starbases == 0
       start_quadrant = quadrant(hero.location)
       if start_quadrant.num_klingons < 2
-        start_quadrant.tweak add_klingons: 1, add_starbases: 2
+        start_quadrant.tweak add_klingons: 1, add_starbase: true
       else
-        start_quadrant.tweak add_starbases: 1
+        start_quadrant.tweak add_starbase: true
       end
 
       hero.reset_start
