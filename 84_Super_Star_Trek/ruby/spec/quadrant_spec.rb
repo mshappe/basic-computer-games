@@ -21,7 +21,8 @@ RSpec.describe Quadrant do
   end
 
   describe '#tweak' do
-    let(:quadrant) { described_class.new(galaxy, x: 4, y: 4) }
+    # No starbase
+    let(:quadrant) { described_class.new(galaxy, x: 4, y: 4, random: -> { 0.95 }) }
 
     describe 'add_klingons' do
       subject { quadrant.tweak add_klingons: 1 }
@@ -64,34 +65,35 @@ RSpec.describe Quadrant do
 
   describe '#place_entity' do
     let(:quadrant) { described_class.new(galaxy, x: 4, y: 4) }
+    let(:location) { Location.new(quadrant: { x: 4, y: 4 }, sector: { x: 7, y: 1 }) }
 
     describe 'the hero' do
-      before { quadrant.place_entity(:hero, x: 7, y: 1 ) }
+      before { quadrant.place_entity(:hero, location: location) }
       it { expect(quadrant.sector(x: 7, y: 1)).to eq Quadrant::TOKENS[:hero] }
     end
 
     describe 'a villain' do
-      before { quadrant.place_entity(:villain, x:7, y: 1 ) }
+      before { quadrant.place_entity(:villain, location: location ) }
       it { expect(quadrant.sector(x: 7, y: 1)).to eq Quadrant::TOKENS[:villain] }
     end
 
     describe 'a starbase' do
-      before { quadrant.place_entity(:starbase, x: 7, y: 1) }
+      before { quadrant.place_entity(:starbase, location: location) }
       it { expect(quadrant.sector(x: 7, y: 1)).to eq Quadrant::TOKENS[:starbase] }
     end
 
     describe 'a star' do
-      before { quadrant.place_entity(:star, x: 7, y: 1) }
+      before { quadrant.place_entity(:star, location: location) }
       it { expect(quadrant.sector(x: 7, y: 1)).to eq Quadrant::TOKENS[:star] }
     end
 
     describe 'space' do
-      before { quadrant.place_entity(:space, x: 7, y: 1) }
+      before { quadrant.place_entity(:space, location: location) }
       it { expect(quadrant.sector(x: 7, y: 1)).to eq Quadrant::TOKENS[:space] }
     end
 
     describe 'a lizard' do
-      it { expect { quadrant.place_entity(:lizard, x: 7, y: 1) }.to raise_error ArgumentError }
+      it { expect { quadrant.place_entity(:lizard, location: location) }.to raise_error ArgumentError }
     end
   end
 

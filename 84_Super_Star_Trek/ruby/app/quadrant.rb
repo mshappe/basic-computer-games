@@ -120,9 +120,9 @@ class Quadrant
                  sector: { x: sx, y: sy }
   end
 
-  def place_entity(type, x:, y:) # sub 8670
+  def place_entity(type, location:) # sub 8670
     raise ArgumentError, "Invalid type #{type}" if !TOKENS.keys.include? type
-    sectors[y - 1][x - 1] = TOKENS[type]
+    sectors[location.sector.y - 1][location.sector.x - 1] = TOKENS[type]
   end
 
   def sector(x:, y:)
@@ -161,14 +161,14 @@ ARRIVAL
   def place_hero # 1680
     # Even stars move for our hero. Hero comes first, so
     # we go based on nav or random-initial coords
-    place_entity(:hero, x: hero.location.sector.x, y: hero.location.sector.y)
+    place_entity(:hero, location: hero.location)
   end
 
   def place_villains
     return unless num_klingons > 0
     @klingons = Array.new(num_klingons) do
       loc = find_space
-      place_entity(:villain, x: loc.sector.x, y: loc.sector.y)
+      place_entity(:villain, location: loc)
       Villain.new(loc)
     end
   end
@@ -176,13 +176,13 @@ ARRIVAL
   def place_starbase
     return unless starbase?
     @starbase = find_space
-    place_entity(:starbase, x: starbase.sector.x, y: starbase.sector.y)
+    place_entity(:starbase, location: starbase)
   end
 
   def place_stars
     @stars = Array.new(num_stars) do
       loc = find_space
-      place_entity(:star, x: loc.sector.x, y: loc.sector.y)
+      place_entity(:star, location: loc)
       loc
     end
   end
