@@ -10,7 +10,7 @@ RSpec.describe Hero do
     it 'is all dressed up with places to go' do
       expect(subject.energy).to eq Hero::MAX_ENERGY
       expect(subject.torpedoes).to eq Hero::MAX_TORPEDOES
-      expect(subject.shields).to eq Hero::MAX_SHIELD_CAPACITY
+      expect(subject.shields).to eq 0
       expect(subject.timekeeper).not_to be_nil
       expect(subject.location).not_to be_nil
       expect(subject.systems).not_to be_nil

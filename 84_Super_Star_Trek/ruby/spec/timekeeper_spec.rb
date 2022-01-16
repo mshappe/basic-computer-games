@@ -1,4 +1,6 @@
 require 'spec_helper'
+
+require_relative '../app/galaxy'
 require_relative '../app/timekeeper'
 
 RSpec.describe Timekeeper do

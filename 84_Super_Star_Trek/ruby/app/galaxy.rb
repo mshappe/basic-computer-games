@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require_relative './hero'
 require_relative './quadrant'
 require_relative './utilities'
 
@@ -57,7 +58,7 @@ class Galaxy
   def validate_galaxy
     if total_starbases == 0
       start_quadrant = quadrant(hero.location)
-      if start_quadrant.klingons < 2
+      if start_quadrant.num_klingons < 2
         start_quadrant.tweak add_klingons: 1, add_starbases: 2
       else
         start_quadrant.tweak add_starbases: 1

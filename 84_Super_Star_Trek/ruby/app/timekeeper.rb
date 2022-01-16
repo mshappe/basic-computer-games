@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Timekeeper
   attr_reader :beginning, :now, :duration, :galaxy
 

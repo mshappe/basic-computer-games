@@ -1,4 +1,4 @@
-require 'spec_helper.rb'
+require 'spec_helper'
 require_relative '../app/quadrant'
 
 RSpec.describe Quadrant do
@@ -8,9 +8,15 @@ RSpec.describe Quadrant do
     subject { described_class.new(galaxy, x: 4, y: 4) }
 
     it 'should have a reasonable number of things' do
-      expect(subject.klingons).to be_between(0, 3)
-      expect(subject.starbases).to be_between(0, 2)
-      expect(subject.stars).to be_between(1, 8)
+      expect(subject.num_klingons).to be_between(0, 3)
+      expect(subject.num_starbases).to be_between(0, 2)
+      expect(subject.num_stars).to be_between(1, 8)
+
+      # The map is seeded when the hero arrives, so
+      # we initialize to empty space for now
+      subject.sectors.each do |y|
+        y.each { |x| expect(x).to eq Quadrant::TOKENS[:space] }
+      end
     end
   end
 
@@ -21,7 +27,7 @@ RSpec.describe Quadrant do
       subject { quadrant.tweak add_klingons: 1 }
 
       it 'revises quadrant numbers' do
-        expect { subject }.to change { quadrant.klingons }.by 1
+        expect { subject }.to change { quadrant.num_klingons }.by 1
       end
 
       it 'revises galaxy numbers' do
@@ -33,7 +39,7 @@ RSpec.describe Quadrant do
       subject { quadrant.tweak add_starbases: 1 }
 
       it 'revises quadrant numbers' do
-        expect { subject }.to change { quadrant.starbases }.by 1
+        expect { subject }.to change { quadrant.num_starbases }.by 1
       end
 
       it 'revises galaxy numbers' do
@@ -53,6 +59,66 @@ RSpec.describe Quadrant do
           expect(quadrant.name).to match /#{expected_name}\s#{expected_subname}/
         end
       end
+    end
+  end
+
+  describe '#place_entity' do
+    let(:quadrant) { described_class.new(galaxy, x: 4, y: 4) }
+
+    describe 'the hero' do
+      before { quadrant.place_entity(:hero, x: 7, y: 1 ) }
+      it { expect(quadrant.sector(x: 7, y: 1)).to eq Quadrant::TOKENS[:hero] }
+    end
+
+    describe 'a villain' do
+      before { quadrant.place_entity(:villain, x:7, y: 1 ) }
+      it { expect(quadrant.sector(x: 7, y: 1)).to eq Quadrant::TOKENS[:villain] }
+    end
+
+    describe 'a starbase' do
+      before { quadrant.place_entity(:starbase, x: 7, y: 1) }
+      it { expect(quadrant.sector(x: 7, y: 1)).to eq Quadrant::TOKENS[:starbase] }
+    end
+
+    describe 'a star' do
+      before { quadrant.place_entity(:star, x: 7, y: 1) }
+      it { expect(quadrant.sector(x: 7, y: 1)).to eq Quadrant::TOKENS[:star] }
+    end
+
+    describe 'space' do
+      before { quadrant.place_entity(:space, x: 7, y: 1) }
+      it { expect(quadrant.sector(x: 7, y: 1)).to eq Quadrant::TOKENS[:space] }
+    end
+
+    describe 'a lizard' do
+      it { expect { quadrant.place_entity(:lizard, x: 7, y: 1) }.to raise_error ArgumentError }
+    end
+  end
+
+  describe 'find_space' do
+    subject { quadrant.find_space }
+
+    let(:quadrant) { described_class.new(galaxy, x: 4, y: 4) }
+
+    it { is_expected.to be_a Location }
+  end
+
+  describe 'hero_arrives' do
+    let(:quadrant) { described_class.new(galaxy, x: 4, y: 4) }
+
+    before do
+      # Force entities to exist
+      allow(quadrant).to receive(:rand) { 0.99 }
+      quadrant.hero_arrives
+    end
+
+    it 'places the hero' do
+      expect(quadrant.sector(x: quadrant.hero.location.sector.x,
+                             y: quadrant.hero.location.sector.y))
+        .to eq Quadrant::TOKENS[:hero]
+    end
+
+    it 'places the villains' do
     end
   end
 end

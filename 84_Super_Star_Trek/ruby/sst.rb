@@ -7,3 +7,5 @@ galaxy = Galaxy.new
 puts galaxy.hero.orders
 puts 'Hit RETURN or ENTER when ready'
 gets "\n"
+
+galaxy.quadrant(galaxy.hero.location).hero_arrives

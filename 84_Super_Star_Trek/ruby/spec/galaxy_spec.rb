@@ -18,7 +18,7 @@ RSpec.describe Galaxy do
     end
 
     describe 'when no bases are generated' do
-      before { allow_any_instance_of(Quadrant).to receive(:starbases) { 0 } }
+      before { allow_any_instance_of(Quadrant).to receive(:num_starbases) { 0 } }
 
       it 'places an additional enemy and two starbase in the starting quadrant' do
 

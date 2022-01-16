@@ -1,6 +1,10 @@
 # frozen_string_literal: true
 
-require_relative '../app/utilities'
+require_relative './galaxy'
+require_relative './location'
+require_relative './ship_systems'
+require_relative './timekeeper'
+require_relative './utilities'
 
 class Hero
   include Utilities
@@ -10,12 +14,11 @@ class Hero
               :galaxy
 
   MAX_ENERGY = 3000
-  MAX_SHIELD_CAPACITY = 200
   MAX_TORPEDOES = 10
 
   def initialize(galaxy)
     @energy = MAX_ENERGY
-    @shields = MAX_SHIELD_CAPACITY
+    @shields = 0
     @torpedoes = MAX_TORPEDOES
     @timekeeper = Timekeeper.new galaxy
     @location = Location.new # TODO: collision check
